@@ -48,9 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BigIntegerExtensions.cs" />
-    <Compile Include="BigRational.cs" />
-    <Compile Include="BigRatMatrix.cs" />
+    <Compile Include="DecimalMatrix.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
