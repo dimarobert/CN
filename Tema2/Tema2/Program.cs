@@ -1,5 +1,6 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
+using Numerics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 namespace Tema2 {
     class Program {
         static void Main(string[] args) {
-
+            test();
             while (true) {
                 Console.WriteLine("1. Factorizarea LU");
                 //Console.WriteLine("2. Metoda Falsei Pozitii");
@@ -90,10 +91,8 @@ namespace Tema2 {
 
 
 
-            var lu = AtA.LU();
-            var luSolve = lu.Solve(Atb);
-            var luRes = ComputeLUx(lu.L, lu.U, Atb, n);
-            Console.WriteLine("LU Solve: " + luSolve.ToString() + "\nLU Res:" + luRes.ToString());
+            var luSolve = AtA.LU().Solve(Atb);
+            Console.WriteLine("LU Solve: " + luSolve.ToString());
 
 
 
@@ -113,13 +112,7 @@ namespace Tema2 {
             for (int k = 0; k < n; k++) {
 
                 for (int j = k; j < n; j++) {
-
-                    double sum = 0.0;
-                    for (int _p = 0; _p <= k - 1; _p++) {
-                        sum += L[k, _p] * U[_p, j];
-                    }
-
-                    U[k, j] = AtA[k, j] - sum;
+                    U[k, j] = AtA[k, j] - LUSum(L, U, 0, k - 1, k, j);
                 }
 
                 for (int i = k + 1; i < n; i++) {
@@ -128,22 +121,12 @@ namespace Tema2 {
 
             }
 
-            Vector<double> y = CreateVector.Dense(n, 0.0);
-            Vector<double> x = CreateVector.Dense(n, 0.0);
-
-            for (int i = 0; i < n; i++) {
-                y[i] = Atb[i] - ySum(L, y, 0, i - 1, i);
-            }
-
-            for (int i = n - 1; i >= 0; i--) {
-                x[i] = y[i] - ySum(U, x, i + 1, n-1, i);
-                x[i] = x[i] / U[i, i];
-            }
+            Vector<double> x = ComputeLUResult(L, U, Atb, n);
 
             Console.WriteLine(x.ToString());
         }
 
-        static Vector<double> ComputeLUx(Matrix<double> L, Matrix<double> U, Vector<double> b, int n) {
+        static Vector<double> ComputeLUResult(Matrix<double> L, Matrix<double> U, Vector<double> b, int n) {
             Vector<double> y = CreateVector.Dense(n, 0.0);
             Vector<double> x = CreateVector.Dense(n, 0.0);
 
@@ -187,6 +170,84 @@ namespace Tema2 {
 
 
             return ret;
+        }
+
+        static BigRatMatrix GetMatrixBR(int n, int p) {
+            BigRatMatrix ret = new BigRatMatrix(n, false);
+
+            ret.Iterate(it => ret[it.i, it.j] = MathNet.Numerics.Combinatorics.Combinations(p + it.j, it.i));
+
+            return ret;
+        }
+
+        static void ResolveLUTest() {
+            int n, p;
+
+            Console.Write("n=");
+            n = int.Parse(Console.ReadLine());
+
+            Console.Write("p=");
+            p = int.Parse(Console.ReadLine());
+
+
+            var A = GetMatrixBR(n, p);
+
+
+            //Console.WriteLine(A.ToString());
+            Vector<double> b = CreateVector.Dense(n, 1.0);
+
+            var At = A.Transpose();
+            var AtA = At.Multiply(A);
+
+            var Atb = At.Multiply(b);
+
+
+
+
+            var luSolve = AtA.LU().Solve(Atb);
+            Console.WriteLine("LU Solve: " + luSolve.ToString());
+
+
+
+
+
+            for (int k = 1; k <= n; k++) {
+                if (AtA.SubMatrix(0, k, 0, k).Determinant() == 0) {
+                    Console.WriteLine($"Matricea pentru (n, p) = ({n}, {p}) nu se descompune LU.");
+                }
+            }
+
+            Matrix<double> L, U;
+            L = new DenseMatrix(n);
+            U = new DenseMatrix(n);
+
+
+            for (int k = 0; k < n; k++) {
+
+                for (int j = k; j < n; j++) {
+                    U[k, j] = AtA[k, j] - LUSum(L, U, 0, k - 1, k, j);
+                }
+
+                for (int i = k + 1; i < n; i++) {
+                    L[i, k] = (AtA[i, k] - LUSum(L, U, 0, k - 1, i, k)) / U[k, k];
+                }
+
+            }
+
+            Vector<double> x = ComputeLUResult(L, U, Atb, n);
+
+            Console.WriteLine(x.ToString());
+        }
+
+        static void test() {
+
+            BigRatMatrix mat = new BigRatMatrix(5);
+            mat.Iterate((it) => {
+                mat[it.i, it.j] = 5 * it.i + it.j;
+            });
+            Console.WriteLine(mat.ToString());
+            Console.WriteLine(mat.Transpose().ToString());
+
         }
     }
 }
