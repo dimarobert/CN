@@ -62,16 +62,16 @@ namespace Tema2
                 {
                     suma += Power(L[j, k], 2);
                 }
-                L[j,j] = Sqrt(A[j,j] - suma);
+                L[j, j] = Sqrt(A[j, j] - suma);
 
                 for (int i = (j + 1); i < n; i++)
                 {
                     decimal suma2 = 0;
                     for (int k = 0; k < j; k++)
                     {
-                        suma2 += L[i,k] * L[j,k];
+                        suma2 += L[i, k] * L[j, k];
                     }
-                    L[i,j] = (A[i,j] - suma2) / L[j,j];
+                    L[i, j] = (A[i, j] - suma2) / L[j, j];
                 }
             }
             #endregion
@@ -82,9 +82,9 @@ namespace Tema2
                 decimal suma = 0;
                 for (int k = 0; k < i; k++)
                 {
-                    suma += L[i,k] * Y[k,0];
+                    suma += L[i, k] * Y[k, 0];
                 }
-                Y[i,0] = (b[i,0] - suma) / L[i,i];
+                Y[i, 0] = (b[i, 0] - suma) / L[i, i];
             }
             #endregion
 
@@ -94,9 +94,9 @@ namespace Tema2
                 decimal suma = 0;
                 for (int k = i + 1; k < n; k++)
                 {
-                    suma += L[k,i] * output[k,0];
+                    suma += L[k, i] * output[k, 0];
                 }
-                output[i,0] = (Y[i,0] - suma) / L[i,i];
+                output[i, 0] = (Y[i, 0] - suma) / L[i, i];
             }
             #endregion
 
@@ -106,7 +106,7 @@ namespace Tema2
         static decimal Power(decimal x, int power)
         {
             decimal ret = 1;
-            for (int i=0; i< power; i++)
+            for (int i = 0; i < power; i++)
             {
                 ret *= x;
             }
@@ -158,7 +158,6 @@ namespace Tema2
                 {
                     rSum += R[i, k] * R[i, k];
                 }
-
                 R[k, k] = Sqrt(aSum - rSum);
 
                 for (int i = 0; i < n; i++)
