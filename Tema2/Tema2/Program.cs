@@ -58,20 +58,59 @@ namespace Tema2
             {
                 for (int j = 0; j <= k - 1; j++)
                 {
-                    R[j, k] = AtA.GetColumn(k).Transpose().Multiply(Q.GetColumn(j)).Sum();// QRSum(AtA, Q, 0, n, k, j);
+                    decimal sum = 0;
+                    for (int i = 0; i < n; i++)
+                    {
+                        sum += AtA[i, k] * Q[i, j];
+                    }
+
+                    R[j, k] = sum;
                 }
 
-                R[k, k] = Sqrt(
-                    AtA.GetColumn(k).Fold((val, acc) => acc + val * val) -
-                    R.SubMatrix(0, Math.Max(k - 1, 0), k, 1).Fold((val, acc) => acc + val * val));
+                decimal aSum = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    aSum += AtA[i, k] * AtA[i, k];
+                }
+                decimal rSum = 0;
+                for (int i = 0; i <= k - 1; i++)
+                {
+                    rSum += R[i, k] * R[i, k];
+                }
+
+                R[k, k] = Sqrt(aSum - rSum);
 
                 for (int i = 0; i < n; i++)
                 {
-                    Q[i, k] = AtA[i, k] - R.GetColumn(k).Multiply(Q.GetRow(i)).Sum();
+                    decimal sum = 0;
+                    for (int j = 0; j <= k - 1; j++)
+                    {
+                        sum += R[j, k] * Q[i, j];
+                    }
+
+                    Q[i, k] = (AtA[i, k] - sum) / R[k, k];
                 }
             }
 
+            var y = new DecimalMatrix(n, 1);
+            var x = new DecimalMatrix(n, 1);
+            for (int i = 0; i < n; i++)
+            {
+                y[i] = Q.GetColumn(i).Transpose().Multiply(Atb.GetColumn(0)).Sum();
+            }
+
+            for (int i = n - 1; i >= 0; i--)
+            {
+                decimal sum = 0;
+                for (int j = i + 1; j < n; j++)
+                {
+                    sum += R[i, j] * x[j];
+                }
+                x[i] = (y[i] - R.SubMatrix(i, 1, i + 1, n - i - 1).Multiply(x.SubMatrix(i + 1, n - i - 1, 0, 1)).Sum()) / R[i, i];
+            }
+            Console.WriteLine(x.ToString());
         }
+
         public static decimal Sqrt(decimal x, decimal epsilon = 0.0M)
         {
             if (x < 0) throw new OverflowException("Cannot calculate square root from a negative number");
@@ -97,129 +136,6 @@ namespace Tema2
             }
             return ret;
         }
-
-        #region Old Double
-        //static void ResolveLU()
-        //{
-        //    int n, p;
-
-        //    Console.Write("n=");
-        //    n = int.Parse(Console.ReadLine());
-
-        //    Console.Write("p=");
-        //    p = int.Parse(Console.ReadLine());
-
-
-        //    Matrix<double> A = GetMatrix(n, p);
-
-
-        //    //Console.WriteLine(A.ToString());
-        //    Vector<double> b = CreateVector.Dense(n, 1.0);
-
-        //    var At = A.Transpose();
-        //    var AtA = At.Multiply(A);
-
-        //    var Atb = At.Multiply(b);
-
-
-
-
-        //    var luSolve = AtA.LU().Solve(Atb);
-        //    Console.WriteLine("LU Solve: " + luSolve.ToString());
-
-
-
-
-
-        //    for (int k = 1; k <= n; k++)
-        //    {
-        //        if (AtA.SubMatrix(0, k, 0, k).Determinant() == 0)
-        //        {
-        //            Console.WriteLine($"Matricea pentru (n, p) = ({n}, {p}) nu se descompune LU.");
-        //        }
-        //    }
-
-        //    Matrix<double> L, U;
-        //    L = new DenseMatrix(n);
-        //    U = new DenseMatrix(n);
-
-
-        //    for (int k = 0; k < n; k++)
-        //    {
-
-        //        for (int j = k; j < n; j++)
-        //        {
-        //            U[k, j] = AtA[k, j] - LUSum(L, U, 0, k - 1, k, j);
-        //        }
-
-        //        for (int i = k + 1; i < n; i++)
-        //        {
-        //            L[i, k] = (AtA[i, k] - LUSum(L, U, 0, k - 1, i, k)) / U[k, k];
-        //        }
-
-        //    }
-
-        //    Vector<double> x = ComputeLUResult(L, U, Atb, n);
-
-        //    Console.WriteLine(x.ToString());
-        //}
-
-        //static Vector<double> ComputeLUResult(Matrix<double> L, Matrix<double> U, Vector<double> b, int n)
-        //{
-        //    Vector<double> y = CreateVector.Dense(n, 0.0);
-        //    Vector<double> x = CreateVector.Dense(n, 0.0);
-
-        //    for (int i = 0; i < n; i++)
-        //    {
-        //        y[i] = b[i] - ySum(L, y, 0, i - 1, i);
-        //    }
-
-        //    for (int i = n - 1; i >= 0; i--)
-        //    {
-        //        x[i] = y[i] - ySum(U, x, i + 1, n - 1, i);
-        //        x[i] = x[i] / U[i, i];
-        //    }
-        //    return x;
-        //}
-
-        //static double ySum(Matrix<double> L, Vector<double> y, int from, int to, int Li)
-        //{
-        //    double result = 0;
-        //    for (int k = from; k <= to; k++)
-        //    {
-        //        result += L[Li, k] * y[k];
-        //    }
-        //    return result;
-        //}
-
-        //static double LUSum(Matrix<double> L, Matrix<double> U, int from, int to, int Li, int Uj)
-        //{
-        //    double result = 0;
-        //    for (int p = from; p <= to; p++)
-        //    {
-        //        result += L[Li, p] * U[p, Uj];
-        //    }
-        //    return result;
-        //}
-
-
-        //static Matrix<double> GetMatrix(int n, int p)
-        //{
-
-        //    Matrix<double> ret = new DenseMatrix(n);
-
-        //    for (int i = 0; i < n; i++)
-        //    {
-        //        for (int j = 0; j < n; j++)
-        //        {
-        //            ret[i, j] = MathNet.Numerics.Combinatorics.Combinations(p + j, i);
-        //        }
-        //    }
-
-
-        //    return ret;
-        //}
-        #endregion
 
         static DecimalMatrix GetMatrix(int n, int p)
         {
