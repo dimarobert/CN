@@ -13,7 +13,7 @@ namespace Tema2
             while (true)
             {
                 Console.WriteLine("1. Factorizarea LU");
-                //Console.WriteLine("2. Metoda Falsei Pozitii");
+                Console.WriteLine("2. Cholesky");
                 Console.WriteLine("3. QR");
 
                 var sel = int.Parse(Console.ReadLine());
@@ -21,7 +21,7 @@ namespace Tema2
                 switch (sel)
                 {
                     case 1: ResolveLU(); break;
-                    //case 2: falseiPozitii(); break;
+                    case 2: ResolveCholesky(); break;
                     case 3: ResolveQR(); break;
                     default: continue;
                 }
@@ -31,6 +31,87 @@ namespace Tema2
             }
         }
 
+        static void ResolveCholesky()
+        {
+
+            int n, p;
+
+            Console.Write("n=");
+            n = int.Parse(Console.ReadLine());
+
+            Console.Write("p=");
+            p = int.Parse(Console.ReadLine());
+
+            var A = GetMatrix(n, p);
+            var At = A.Transpose();
+            A = At.Multiply(A);
+            var b = new DecimalMatrix(n, 1, 1);
+            b = At.Multiply(b);
+
+
+            var L = new DecimalMatrix(n);
+            var Y = new DecimalMatrix(n, 1);
+            var output = new DecimalMatrix(n, 1);
+
+
+            #region MetodaRadaciniiPatrate
+            for (int j = 0; j < n; j++)
+            {
+                decimal suma = 0;
+                for (int k = 0; k < j; k++)
+                {
+                    suma += Power(L[j, k], 2);
+                }
+                L[j,j] = Sqrt(A[j,j] - suma);
+
+                for (int i = (j + 1); i < n; i++)
+                {
+                    decimal suma2 = 0;
+                    for (int k = 0; k < j; k++)
+                    {
+                        suma2 += L[i,k] * L[j,k];
+                    }
+                    L[i,j] = (A[i,j] - suma2) / L[j,j];
+                }
+            }
+            #endregion
+
+            #region Calculam Y
+            for (int i = 0; i < n; i++)
+            {
+                decimal suma = 0;
+                for (int k = 0; k < i; k++)
+                {
+                    suma += L[i,k] * Y[k,0];
+                }
+                Y[i,0] = (b[i,0] - suma) / L[i,i];
+            }
+            #endregion
+
+            #region Calculam X
+            for (int i = (int.Parse(n.ToString()) - 1); i >= 0; i--)
+            {
+                decimal suma = 0;
+                for (int k = i + 1; k < n; k++)
+                {
+                    suma += L[k,i] * output[k,0];
+                }
+                output[i,0] = (Y[i,0] - suma) / L[i,i];
+            }
+            #endregion
+
+            Console.WriteLine(output.ToString());
+        }
+
+        static decimal Power(decimal x, int power)
+        {
+            decimal ret = 1;
+            for (int i=0; i< power; i++)
+            {
+                ret *= x;
+            }
+            return ret;
+        }
 
         static void ResolveQR()
         {
