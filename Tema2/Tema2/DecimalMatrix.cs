@@ -34,7 +34,11 @@ namespace Tema2
                 Iterate(it => this[it.i, it.j] = val);
         }
 
-
+        public decimal this[int i]
+        {
+            get { return values[i, 0]; }
+            set { values[i, 0] = value; }
+        }
         public decimal this[int i, int j]
         {
             get { return values[i, j]; }
