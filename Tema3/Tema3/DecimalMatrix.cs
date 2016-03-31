@@ -45,6 +45,18 @@ namespace Tema3
             set { values[i, j] = value; }
         }
 
+        public static DecimalMatrix Eye(int n)
+        {
+            var ret = new DecimalMatrix(n);
+            ret.Iterate(it =>
+            {
+                if (it.i == it.j)
+                    return 1m;
+                return 0m;
+            });
+            return ret;
+        }
+
         public DecimalMatrix Transpose()
         {
             DecimalMatrix ret = new DecimalMatrix(columnCount, rowCount);
@@ -72,6 +84,18 @@ namespace Tema3
                     }
                 }
             }
+            return ret;
+        }
+
+        public DecimalMatrix Multiply(decimal val)
+        {
+            var ret = new DecimalMatrix(this.rowCount, this.columnCount);
+
+            ret.Iterate(it =>
+            {
+                return this[it.i, it.j] * val;
+            });
+
             return ret;
         }
 
@@ -147,6 +171,36 @@ namespace Tema3
             return sum;
         }
 
+        public static DecimalMatrix operator +(DecimalMatrix left, DecimalMatrix right)
+        {
+            if (left.rowCount != right.rowCount || left.columnCount != right.columnCount)
+                throw new Exception("Matrix sizes must match");
+
+            var ret = new DecimalMatrix(left.rowCount, left.columnCount);
+
+            ret.Iterate(it =>
+            {
+                return left[it.i, it.j] + right[it.i, it.j];
+            });
+
+            return ret;
+        }
+
+        public static DecimalMatrix operator -(DecimalMatrix left, DecimalMatrix right)
+        {
+            if (left.rowCount != right.rowCount || left.columnCount != right.columnCount)
+                throw new Exception("Matrix sizes must match");
+
+            var ret = new DecimalMatrix(left.rowCount, left.columnCount);
+
+            ret.Iterate(it =>
+            {
+                return left[it.i, it.j] - right[it.i, it.j];
+            });
+
+            return ret;
+        }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -158,10 +212,17 @@ namespace Tema3
                     lasti = it.i;
                     sb.Append("\r\n");
                 }
-                sb.Append($"\t{it.value}");
+                sb.Append($"{it.value,14:N10} ");
             });
             sb.Append('\n');
             return sb.ToString();
+        }
+
+        public double[,] ToDoubleMatrix()
+        {
+            double[,] ret = new double[rowCount, columnCount];
+            Iterate(it => ret[it.i, it.j] = (double)it.value);
+            return ret;
         }
     }
 }
